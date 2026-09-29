@@ -1,0 +1,979 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>EnergyTrack</title>
+
+<style>
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:Arial,sans-serif;
+}
+
+body{
+  background:#f2f6fb;
+  color:#172033;
+}
+
+header{
+  background:#1261d8;
+  color:white;
+  padding:20px;
+  text-align:center;
+}
+
+header h1{
+  font-size:27px;
+}
+
+header p{
+  margin-top:5px;
+  font-size:13px;
+}
+
+.container{
+  padding:16px;
+  max-width:700px;
+  margin:auto;
+}
+
+.card{
+  background:white;
+  padding:18px;
+  margin-bottom:15px;
+  border-radius:15px;
+  box-shadow:0 3px 12px rgba(0,0,0,0.08);
+}
+
+.card h2{
+  font-size:18px;
+  margin-bottom:15px;
+}
+
+.status{
+  display:flex;
+  justify-content:space-between;
+  padding:11px 0;
+  border-bottom:1px solid #e5e9ef;
+}
+
+.status:last-child{
+  border-bottom:none;
+}
+
+.green{
+  color:#079455;
+  font-weight:bold;
+}
+
+.orange{
+  color:#e68a00;
+  font-weight:bold;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.box{
+  background:#f5f8fc;
+  padding:15px;
+  border-radius:12px;
+}
+
+.box small{
+  color:#657187;
+}
+
+.box h3{
+  margin-top:7px;
+  font-size:22px;
+}
+
+button{
+  border:none;
+  padding:12px 16px;
+  border-radius:10px;
+  background:#1261d8;
+  color:white;
+  font-weight:bold;
+  margin:5px 3px;
+}
+
+button.secondary{
+  background:#e8eef7;
+  color:#172033;
+}
+
+input{
+  width:100%;
+  padding:12px;
+  margin:7px 0 12px;
+  border:1px solid #ccd5e2;
+  border-radius:9px;
+  outline:none;
+}
+
+input:focus{
+  border-color:#1261d8;
+}
+
+textarea{
+  width:100%;
+  padding:12px;
+  border:1px solid #ccd5e2;
+  border-radius:10px;
+  resize:none;
+  min-height:80px;
+}
+
+#actualData{
+  display:none;
+}
+
+.graph{
+  height:160px;
+  display:flex;
+  align-items:end;
+  gap:9px;
+  padding:10px;
+}
+
+.bar{
+  flex:1;
+  background:#1261d8;
+  border-radius:6px 6px 0 0;
+}
+
+.bar span{
+  display:block;
+  text-align:center;
+  font-size:10px;
+  color:#657187;
+  margin-top:5px;
+}
+
+.ai-box{
+  background:#eef5ff;
+  padding:15px;
+  border-radius:12px;
+  margin-top:12px;
+}
+
+.ai-title{
+  font-weight:bold;
+  color:#1261d8;
+  margin-bottom:8px;
+}
+
+.chat{
+  max-height:300px;
+  overflow-y:auto;
+  margin-bottom:10px;
+}
+
+.user-message{
+  background:#1261d8;
+  color:white;
+  padding:10px;
+  border-radius:12px 12px 2px 12px;
+  margin:8px 0 8px 30px;
+}
+
+.ai-message{
+  background:#f1f4f8;
+  padding:10px;
+  border-radius:12px 12px 12px 2px;
+  margin:8px 30px 8px 0;
+}
+
+footer{
+  text-align:center;
+  color:#758197;
+  font-size:12px;
+  padding:15px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>⚡ EnergyTrack</h1>
+  <p>Smart Energy Monitoring & Management</p>
+</header>
+
+<div class="container">
+
+<!-- DATA SOURCE -->
+<div class="card">
+
+  <h2>📡 Data Source</h2>
+
+  <button onclick="digitalMode()">🖥️ Digital Mode</button>
+
+  <button class="secondary" onclick="actualMode()">
+    ⚡ Actual Meter
+  </button>
+
+  <p id="modeStatus"
+     class="green"
+     style="margin-top:12px;">
+    🟢 Digital / Demo Data
+  </p>
+
+</div>
+
+
+<!-- DASHBOARD -->
+<div class="card">
+
+  <h2>📊 Energy Dashboard</h2>
+
+  <div class="grid">
+
+    <div class="box">
+      <small>Voltage</small>
+      <h3 id="voltage">231 V</h3>
+    </div>
+
+    <div class="box">
+      <small>Current</small>
+      <h3 id="current">4.8 A</h3>
+    </div>
+
+    <div class="box">
+      <small>Power</small>
+      <h3 id="power">1.11 kW</h3>
+    </div>
+
+    <div class="box">
+      <small>Energy</small>
+      <h3 id="energy">18.6 kWh</h3>
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ACTUAL METER -->
+<div class="card" id="actualData">
+
+  <h2>📡 Actual Smart Meter</h2>
+
+  <div class="status">
+    <span>Meter</span>
+    <b>Genus SAKSHAM-145</b>
+  </div>
+
+  <div class="status">
+    <span>Communication</span>
+    <b class="green" id="communication">
+      RF + Cellular
+    </b>
+  </div>
+
+  <div class="status">
+    <span>RF Frequency</span>
+    <b>865–867 MHz</b>
+  </div>
+
+  <div class="status">
+    <span>Node ID</span>
+    <b>0CAF5A0B000C35B0</b>
+  </div>
+
+  <div class="status">
+    <span>Connection</span>
+    <b class="green" id="connection">
+      Connected
+    </b>
+  </div>
+
+  <div class="status">
+    <span>Last Update</span>
+    <b id="lastUpdate">Just now</b>
+  </div>
+
+  <button onclick="syncMeter()">
+    🔄 Sync Meter
+  </button>
+
+  <p style="font-size:12px;color:#657187;margin-top:10px;">
+    Real readings require an authorized meter gateway/HES/API connection.
+  </p>
+
+</div>
+
+
+<!-- MANUAL READING -->
+<div class="card">
+
+  <h2>✍️ Manual Meter Reading</h2>
+
+  <label>Previous Meter Reading (kWh)</label>
+
+  <input
+    id="previousReading"
+    type="number"
+    placeholder="Example: 1250"
+  >
+
+  <label>Current Meter Reading (kWh)</label>
+
+  <input
+    id="currentReading"
+    type="number"
+    placeholder="Example: 1325"
+  >
+
+  <label>Reading Date</label>
+
+  <input
+    id="readingDate"
+    type="date"
+  >
+
+  <button onclick="calculateManualReading()">
+    📊 Calculate Reading
+  </button>
+
+  <div
+    id="manualResult"
+    class="ai-box"
+    style="display:none;"
+  >
+
+    <p>
+      <b>Energy Consumed:</b>
+      <span id="manualUnits">0 kWh</span>
+    </p>
+
+    <p style="margin-top:8px;">
+      <b>Reading Date:</b>
+      <span id="manualDate">-</span>
+    </p>
+
+  </div>
+
+</div>
+
+
+<!-- AI ANALYSIS -->
+<div class="card">
+
+  <h2>🤖 AI Energy Analysis</h2>
+
+  <p style="font-size:13px;color:#657187;">
+    Analyze your meter reading and get smart energy-saving suggestions.
+  </p>
+
+  <button onclick="analyzeEnergy()">
+    🤖 Analyze Energy
+  </button>
+
+  <div
+    id="aiResult"
+    class="ai-box"
+    style="display:none;"
+  >
+
+    <div class="ai-title">
+      🔍 Energy Analysis
+    </div>
+
+    <p id="aiMessage"></p>
+
+    <p
+      id="aiSuggestion"
+      style="margin-top:10px;"
+    ></p>
+
+  </div>
+
+</div>
+
+
+<!-- AI ASSISTANT -->
+<div class="card">
+
+  <h2>🤖 EnergyTrack AI Assistant</h2>
+
+  <p style="font-size:13px;color:#657187;margin-bottom:12px;">
+    Ask questions about your energy consumption and saving.
+  </p>
+
+  <div id="chat" class="chat">
+
+    <div class="ai-message">
+      👋 Hello! I am EnergyTrack AI.<br><br>
+      Ask me about your electricity consumption,
+      bill or energy-saving methods.
+    </div>
+
+  </div>
+
+  <textarea
+    id="userQuestion"
+    placeholder="Example: How can I reduce my electricity bill?"
+  ></textarea>
+
+  <button onclick="askAI()">
+    🤖 Ask AI
+  </button>
+
+</div>
+
+
+<!-- STATUS -->
+<div class="card">
+
+  <h2>🚦 System Status</h2>
+
+  <div class="status">
+    <span>Load Status</span>
+    <b class="green" id="loadStatus">
+      Normal
+    </b>
+  </div>
+
+  <div class="status">
+    <span>Power Factor</span>
+    <b>0.94</b>
+  </div>
+
+  <div class="status">
+    <span>Frequency</span>
+    <b>49.9 Hz</b>
+  </div>
+
+</div>
+
+
+<!-- GRAPH -->
+<div class="card">
+
+  <h2>📈 Daily Consumption</h2>
+
+  <div class="graph">
+
+    <div class="bar" style="height:55%;">
+      <span>Mon</span>
+    </div>
+
+    <div class="bar" style="height:70%;">
+      <span>Tue</span>
+    </div>
+
+    <div class="bar" style="height:48%;">
+      <span>Wed</span>
+    </div>
+
+    <div class="bar" style="height:82%;">
+      <span>Thu</span>
+    </div>
+
+    <div class="bar" style="height:63%;">
+      <span>Fri</span>
+    </div>
+
+    <div class="bar" style="height:42%;">
+      <span>Sat</span>
+    </div>
+
+    <div class="bar" style="height:58%;">
+      <span>Sun</span>
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- BILL -->
+<div class="card">
+
+  <h2>💰 Bill Calculator</h2>
+
+  <label>Units Consumed (kWh)</label>
+
+  <input
+    id="units"
+    type="number"
+    value="412"
+  >
+
+  <label>Rate per Unit (₹)</label>
+
+  <input
+    id="rate"
+    type="number"
+    value="7.97"
+  >
+
+  <button onclick="calculateBill()">
+    Calculate Bill
+  </button>
+
+  <h2
+    id="billResult"
+    style="margin-top:15px;"
+  >
+    Estimated Bill: ₹3,284
+  </h2>
+
+</div>
+
+
+<!-- ENERGY TIP -->
+<div class="card">
+
+  <h2>💡 Energy Saving Tip</h2>
+
+  <p>
+    Switch off unnecessary lights, computers and electrical equipment
+    when they are not in use.
+  </p>
+
+</div>
+
+</div>
+
+
+<footer>
+
+  EnergyTrack © 2026 | Smart Energy Management Project
+
+  <br>
+
+  <span style="font-weight:bold;color:#1261d8;">
+    Created & Developed by Avi Bhagat
+  </span>
+
+</footer>
+
+
+<script>
+
+
+// DIGITAL MODE
+function digitalMode(){
+
+  document.getElementById("voltage").innerText =
+    "231 V";
+
+  document.getElementById("current").innerText =
+    "4.8 A";
+
+  document.getElementById("power").innerText =
+    "1.11 kW";
+
+  document.getElementById("energy").innerText =
+    "18.6 kWh";
+
+  document.getElementById("modeStatus").innerText =
+    "🟢 Digital / Demo Data";
+
+  document.getElementById("modeStatus").className =
+    "green";
+
+  document.getElementById("actualData").style.display =
+    "none";
+}
+
+
+// ACTUAL MODE
+function actualMode(){
+
+  document.getElementById("voltage").innerText =
+    "230.8 V";
+
+  document.getElementById("current").innerText =
+    "4.6 A";
+
+  document.getElementById("power").innerText =
+    "1.06 kW";
+
+  document.getElementById("energy").innerText =
+    "18.4 kWh";
+
+  document.getElementById("modeStatus").innerText =
+    "🔵 Actual Meter Mode";
+
+  document.getElementById("modeStatus").className =
+    "green";
+
+  document.getElementById("actualData").style.display =
+    "block";
+}
+
+
+// SYNC METER
+function syncMeter(){
+
+  document.getElementById("connection").innerText =
+    "Syncing...";
+
+  document.getElementById("connection").className =
+    "orange";
+
+  setTimeout(function(){
+
+    document.getElementById("connection").innerText =
+      "Connected";
+
+    document.getElementById("connection").className =
+      "green";
+
+    document.getElementById("lastUpdate").innerText =
+      new Date().toLocaleTimeString();
+
+    alert("Meter data synchronized successfully.");
+
+  },1200);
+
+}
+
+
+// MANUAL READING
+function calculateManualReading(){
+
+  let previous =
+    parseFloat(
+      document.getElementById("previousReading").value
+    ) || 0;
+
+  let current =
+    parseFloat(
+      document.getElementById("currentReading").value
+    ) || 0;
+
+  let date =
+    document.getElementById("readingDate").value;
+
+  if(current < previous){
+
+    alert(
+      "Current reading cannot be less than previous reading."
+    );
+
+    return;
+  }
+
+  if(current === 0){
+
+    alert(
+      "Please enter the current meter reading."
+    );
+
+    return;
+  }
+
+  let consumed =
+    current - previous;
+
+  document.getElementById("manualUnits").innerText =
+    consumed.toFixed(2) + " kWh";
+
+  document.getElementById("manualDate").innerText =
+    date || "Not selected";
+
+  document.getElementById("manualResult").style.display =
+    "block";
+
+  // Send reading to bill calculator
+  document.getElementById("units").value =
+    consumed.toFixed(2);
+
+  calculateBill();
+
+}
+
+
+// AI ENERGY ANALYSIS
+function analyzeEnergy(){
+
+  let previous =
+    parseFloat(
+      document.getElementById("previousReading").value
+    ) || 0;
+
+  let current =
+    parseFloat(
+      document.getElementById("currentReading").value
+    ) || 0;
+
+  if(current <= 0){
+
+    alert(
+      "Please enter the current meter reading first."
+    );
+
+    return;
+  }
+
+  if(current < previous){
+
+    alert(
+      "Please check your meter readings."
+    );
+
+    return;
+  }
+
+  let consumed =
+    current - previous;
+
+  let message = "";
+  let suggestion = "";
+
+  if(consumed <= 50){
+
+    message =
+      "🟢 Your energy consumption is currently low.";
+
+    suggestion =
+      "💡 Continue monitoring your usage and avoid unnecessary standby loads.";
+
+  }
+
+  else if(consumed <= 150){
+
+    message =
+      "🟡 Your energy consumption is in a moderate range.";
+
+    suggestion =
+      "💡 Check lights, fans, appliances and standby equipment to reduce usage.";
+
+  }
+
+  else if(consumed <= 300){
+
+    message =
+      "🟠 Your energy consumption is relatively high.";
+
+    suggestion =
+      "⚠️ Review high-power appliances such as AC, heaters, pumps and motors.";
+
+  }
+
+  else{
+
+    message =
+      "🔴 High energy consumption detected.";
+
+    suggestion =
+      "🚨 Check major electrical loads, operating hours and possible abnormal consumption.";
+
+  }
+
+  document.getElementById("aiMessage").innerText =
+    message;
+
+  document.getElementById("aiSuggestion").innerText =
+    suggestion;
+
+  document.getElementById("aiResult").style.display =
+    "block";
+
+}
+
+
+// BILL CALCULATOR
+function calculateBill(){
+
+  let units =
+    parseFloat(
+      document.getElementById("units").value
+    ) || 0;
+
+  let rate =
+    parseFloat(
+      document.getElementById("rate").value
+    ) || 0;
+
+  let bill =
+    units * rate;
+
+  document.getElementById("billResult").innerText =
+    "Estimated Bill: ₹" +
+    bill.toLocaleString(
+      "en-IN",
+      {
+        maximumFractionDigits:2
+      }
+    );
+
+}
+
+
+// AI ASSISTANT
+function askAI(){
+
+  let question =
+    document.getElementById("userQuestion").value
+    .trim();
+
+  if(question === ""){
+
+    alert("Please type your question.");
+
+    return;
+  }
+
+  let chat =
+    document.getElementById("chat");
+
+  // USER MESSAGE
+  let userMessage =
+    document.createElement("div");
+
+  userMessage.className =
+    "user-message";
+
+  userMessage.innerText =
+    "👤 " + question;
+
+  chat.appendChild(userMessage);
+
+
+  // CREATE AI RESPONSE
+  let answer =
+    getAIResponse(question);
+
+
+  setTimeout(function(){
+
+    let aiMessage =
+      document.createElement("div");
+
+    aiMessage.className =
+      "ai-message";
+
+    aiMessage.innerText =
+      "🤖 " + answer;
+
+    chat.appendChild(aiMessage);
+
+    chat.scrollTop =
+      chat.scrollHeight;
+
+  },500);
+
+
+  document.getElementById("userQuestion").value =
+    "";
+
+}
+
+
+// LOCAL AI RESPONSE ENGINE
+function getAIResponse(question){
+
+  let q =
+    question.toLowerCase();
+
+  let previous =
+    parseFloat(
+      document.getElementById("previousReading").value
+    ) || 0;
+
+  let current =
+    parseFloat(
+      document.getElementById("currentReading").value
+    ) || 0;
+
+  let consumed =
+    current - previous;
+
+
+  if(
+    q.includes("bill") ||
+    q.includes("वीज बिल") ||
+    q.includes("विज बिल")
+  ){
+
+    return "तुमचा electricity bill कमी करण्यासाठी AC, heater, water heater, pump आणि इतर high-power loads चा वापर कमी करा. Standby appliances देखील बंद ठेवा.";
+
+  }
+
+
+  if(
+    q.includes("saving") ||
+    q.includes("save") ||
+    q.includes("कमी") ||
+    q.includes("बचत")
+  ){
+
+    return "Energy saving साठी LED lights वापरा, unnecessary loads बंद करा, AC चे temperature योग्य ठेवा आणि high-power appliances चा operating time कमी करा.";
+
+  }
+
+
+  if(
+    q.includes("consumption") ||
+    q.includes("usage") ||
+    q.includes("वापर")
+  ){
+
+    if(consumed >= 0){
+
+      return "तुमच्या manual readings नुसार estimated consumption " +
+      consumed.toFixed(2) +
+      " kWh आहे.";
+
+    }
+
+    return "कृपया Previous आणि Current meter reading enter करा.";
+
+  }
+
+
+  if(
+    q.includes("reading") ||
+    q.includes("मीटर")
+  ){
+
+    return "Manual Reading मध्ये Previous Meter Reading आणि Current Meter Reading enter करा. EnergyTrack तुमचा consumption automatically calculate करेल.";
+
+  }
+
+
+  if(
+    q.includes("ac") ||
+    q.includes("air conditioner")
+  ){
+
+    return "AC चा energy usage कमी करण्यासाठी temperature साधारण 24–26°C ठेवणे, filters clean ठेवणे आणि unnecessary running टाळणे उपयोगी ठरते.";
+
+  }
+
+
+  if(
+    q.includes("high") ||
+    q.includes("जास्त")
+  ){
+
+    return "Consumption जास्त असल्यास AC, heater, pump, motor आणि इतर high-power loads तपासा. Operating hours आणि अचानक वाढलेली meter reading देखील तपासा.";
+
+  }
+
+
+  return "मी तुमच्या EnergyTrack readings वर आधारित basic energy analysis करू शकतो. तुम्ही bill, consumption, saving, reading किंवा high usage बद्दल प्रश्न विचारू शकता.";
+
+}
+
+</script>
+
+</body>
+</html>
+
+
